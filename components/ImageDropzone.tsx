@@ -53,6 +53,7 @@ export function ImageDropzone({ photos, max, busy, error, onFiles, onRemove }: P
           accept="image/jpeg,image/png,image/webp"
           multiple
           className="sr-only"
+          tabIndex={-1}
           disabled={full || busy}
           onChange={(e) => {
             onFiles(Array.from(e.target.files ?? []));

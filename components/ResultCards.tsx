@@ -26,7 +26,7 @@ function Card({
       className="rounded-2xl border border-forest/15 bg-paper p-5 shadow-[0_1px_0_rgb(15_61_46/0.08)]"
     >
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-saffron-deep">{heading}</h3>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-saffron-ink">{heading}</h2>
         <CopyButton text={copyText} label={heading.toLowerCase()} />
       </div>
       <div className="mt-3">{children}</div>
