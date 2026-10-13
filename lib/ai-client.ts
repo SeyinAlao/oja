@@ -24,7 +24,7 @@ export function aiConfig() {
     baseUrl: (process.env.AI_BASE_URL || "http://localhost:11434/v1").replace(/\/+$/, ""),
     model: process.env.AI_MODEL || "gemma3:4b",
     apiKey: process.env.AI_API_KEY || "",
-    timeoutMs: (Number(process.env.AI_TIMEOUT_SECONDS) || 180) * 1000,
+    timeoutMs: (Number(process.env.AI_TIMEOUT_SECONDS) || 300) * 1000,
   };
 }
 

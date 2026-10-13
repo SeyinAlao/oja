@@ -6,3 +6,4 @@ node_modules
 next-env.d.ts
 test-assets/
 .shots/
+.shots-server.log

@@ -8,7 +8,7 @@ const MESSAGES = [
   "Picking out what buyers will notice…",
   "Writing the caption…",
   "Thinking about a fair price…",
-  "Almost there. Small models take their time…",
+  "Still working. Small models on a laptop can take a couple of minutes…",
 ];
 
 function Bar({ w }: { w: string }) {
