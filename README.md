@@ -28,15 +28,22 @@ Copy `.env.example` to `.env.local` if you want to change anything.
 | `AI_API_KEY` | empty | Sent as a Bearer token when set |
 | `AI_TIMEOUT_SECONDS` | `300` | Per-request timeout |
 
-## Use another open-weight endpoint
+## Using a hosted open-weight model
 
-No code changes: set the three variables. For example, any hosted provider serving a vision-capable open model (Gemma 3, Llama 3.2 Vision, Qwen2.5-VL, Pixtral) through `/v1/chat/completions`:
+No code changes: set `AI_BASE_URL`, `AI_MODEL` and (if the provider needs one) `AI_API_KEY`. The key is sent as `Authorization: Bearer <key>`; with no key, no header is sent (tested both ways). The model must accept image input.
 
-```
-AI_BASE_URL=https://your-provider.example/v1
-AI_MODEL=<vision model id>
-AI_API_KEY=<key>
-```
+| Provider | `AI_BASE_URL` | `AI_MODEL` (example only) | `AI_API_KEY` |
+| --- | --- | --- | --- |
+| Local Ollama | `http://localhost:11434/v1` | `gemma3:4b` | leave empty |
+| OpenRouter | `https://openrouter.ai/api/v1` | a `provider/model` slug of a vision-capable open model | OpenRouter key |
+| Google AI Studio (hosted Gemma) | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemma-4-31b-it` or `gemma-4-26b-a4b-it` | Gemini API key |
+| Any OpenAI-compatible provider | `https://<host>/v1` | the provider's vision model id | provider key |
+
+What was checked (against the providers' own docs, 13 Oct 2026) and what was not:
+
+- OpenRouter's base URL and Bearer auth are documented. Pick the model slug from `openrouter.ai/models` or `GET /api/v1/models`, and filter for image input.
+- Google documents the OpenAI-compatible base URL, Bearer auth and `image_url` data URLs. Its Gemma page lists `gemma-4-31b-it` and `gemma-4-26b-a4b-it` on the Gemini API with image support. I did not confirm that those Gemma IDs are served through the OpenAI-compatible path specifically, and I have not run them. Treat the model names as examples and check the provider's current list.
+- Hosted endpoints receive the photos you send. Only the local Ollama setup keeps them on your machine.
 
 ## How the AI layer works
 
@@ -70,16 +77,36 @@ A GPU or a hosted endpoint is far faster; these are the worst-case numbers.
 
 ## Privacy
 
-Photos are resized in the browser, sent once to the model, and never written to disk or a database. Oja has no database, no accounts and no analytics. The server logs only style, image count, model and duration.
+Photos are resized in the browser, sent once to the model, and never written to disk or a database. Oja has no database, no accounts and no analytics. The server logs only style, image count, model and duration. With local Ollama the photos never leave your machine; with a hosted endpoint they go to that provider, and the model badge in the UI says which one is in use. `/api/health` returns only `ok`, the model name and whether it is local, never the URL or key.
 
 ## Deploy on Render
 
-A hosted model is required (Render cannot reach your laptop's Ollama).
+A hosted model is required: Render cannot reach Ollama on your laptop. `render.yaml` describes the service (Node 22, Frankfurt, free plan, health check `/api/health`).
 
-- Build command: `pnpm install --frozen-lockfile && pnpm build`
-- Start command: `pnpm start`
-- Environment: `AI_BASE_URL`, `AI_MODEL`, `AI_API_KEY`, optionally `AI_TIMEOUT_SECONDS`, and `NODE_VERSION=22`.
-- Free instances sleep after idle time, so the first request is slow.
+Manual steps:
+
+1. Push the repo to GitHub.
+2. Render dashboard: **New > Blueprint**, pick the `oja` repo, apply. Render asks for `AI_BASE_URL`, `AI_MODEL` and `AI_API_KEY` (they are `sync: false`, so they are never in git). Use the table above.
+3. Wait for the first deploy, then open `https://<service>.onrender.com/api/health`. It should return `{"ok":true,"model":"...","local":false}`.
+4. Custom domain: service **Settings > Custom Domains > + Add Custom Domain**, enter `oja-ng.tech`, Save. Render also adds `www.oja-ng.tech` and redirects it to the root.
+5. At your DNS provider (details below), then click **Verify** on Render and wait for the certificate.
+
+DNS for `oja-ng.tech` (from Render's docs; confirm the values shown in your dashboard):
+
+| Name | Type | Value |
+| --- | --- | --- |
+| `@` (root) | `ALIAS` or `ANAME` | `<service>.onrender.com` |
+| `@` (root), if your provider has neither | `A` | `216.24.57.1` (Cloudflare: use a `CNAME` instead) |
+| `www` | `CNAME` | `<service>.onrender.com` |
+
+Remove any `AAAA` records and any domain-forwarding feature on the domain.
+
+Notes:
+
+- The build command is `corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build`. Corepack reads `packageManager` (`pnpm@11.1.2`) from `package.json`. `--prod=false` keeps TypeScript and Tailwind in case `NODE_ENV=production` is set at build time. `pnpm-workspace.yaml` (`allowBuilds`) is committed and was honoured in a clean clone with `NODE_ENV=production`. That clean-clone build ran on Windows; I have not run it on Render itself.
+- `NODE_VERSION=22` is set in `render.yaml` (Render's default is currently newer), and `engines` in `package.json` allows 22 to 24.
+- Free instances sleep after idle time, so the first request after a pause is slow.
+- Optional: set `AI_TIMEOUT_SECONDS` to something shorter for hosted models.
 
 ## Why open models
 
