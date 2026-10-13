@@ -4,7 +4,12 @@ Listing writer for small Nigerian sellers on Instagram and WhatsApp. Upload 1 to
 
 Built with Next.js (App Router), TypeScript (strict), Tailwind CSS and Framer Motion. The AI is any open-weight vision model behind an OpenAI-compatible endpoint; the default is `gemma3:4b` on local Ollama.
 
-> Screenshots: _add `docs/mobile.png` and `docs/result.png` here._
+<p>
+  <img src="docs/mobile.png" alt="Oja on a phone: empty state with photo upload, hints and style picker" width="300">
+  <img src="docs/result.png" alt="Oja on a phone: a generated Naija Pidgin listing with copy buttons and a price guide" width="300">
+</p>
+
+The second screenshot is one real generation from `gemma3:4b` on local Ollama (CPU only), not a mock-up.
 
 ## Run locally
 
@@ -73,7 +78,7 @@ What was checked (against the providers' own docs, 13 Oct 2026) and what was not
 | Naija Pidgin | 148.0 s |
 | Yoruba-flavoured | 157.2 s |
 
-A GPU or a hosted endpoint is far faster; these are the worst-case numbers.
+A later run through the browser UI (Naija Pidgin, same photo) took 215.0 s on the server, 215.6 s in the UI, on the same CPU, so expect 2.5 to 3.5 minutes locally. That is why the UI shows an elapsed-seconds counter for local models. A GPU or a hosted endpoint is far faster; I have not measured a hosted endpoint yet.
 
 ## Privacy
 
