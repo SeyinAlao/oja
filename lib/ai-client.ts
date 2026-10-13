@@ -28,6 +28,20 @@ export function aiConfig() {
   };
 }
 
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0"]);
+
+/** Safe-to-expose summary of the configured model: never the URL or key. */
+export function endpointInfo(): { model: string; local: boolean } {
+  const { baseUrl, model } = aiConfig();
+  let host = "";
+  try {
+    host = new URL(baseUrl).hostname.toLowerCase();
+  } catch {
+    // An unparseable URL is treated as hosted; requests will fail as "unreachable".
+  }
+  return { model, local: LOCAL_HOSTS.has(host) };
+}
+
 // Enough for the whole JSON object; keeps a runaway small model from rambling.
 const MAX_TOKENS = 900;
 
@@ -57,7 +71,7 @@ export const chat: ChatFn = async (messages) => {
         `The model did not answer within ${Math.round(timeoutMs / 1000)} seconds.`,
       );
     }
-    throw new AiError("unreachable", `Could not reach the model at ${baseUrl}.`);
+    throw new AiError("unreachable", "Could not reach the AI model.");
   }
 
   if (!res.ok) {

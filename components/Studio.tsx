@@ -1,12 +1,13 @@
 "use client";
 
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { resizeToDataUrl } from "@/lib/resize-image";
 import type { Listing, Style } from "@/lib/schema";
 import { ErrorPanel, type ApiFailure } from "./ErrorPanel";
 import { ImageDropzone, type Photo } from "./ImageDropzone";
 import { LoadingState } from "./LoadingState";
+import { ModelBadge, type ModelInfo } from "./ModelBadge";
 import { ResultCards } from "./ResultCards";
 import { StylePicker } from "./StylePicker";
 
@@ -29,7 +30,20 @@ export function Studio() {
   const [price, setPrice] = useState("");
   const [style, setStyle] = useState<Style>("english");
   const [outcome, setOutcome] = useState<Outcome>({ kind: "idle" });
+  const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // A one-off read of which model is configured; not server data worth a cache.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/health", { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && typeof d.model === "string") setModelInfo({ model: d.model, local: Boolean(d.local) });
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   const loading = outcome.kind === "loading";
 
@@ -65,9 +79,15 @@ export function Studio() {
           style,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setOutcome({ kind: "error", failure: data as ApiFailure });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.listing) {
+        setOutcome({
+          kind: "error",
+          failure:
+            data && typeof data.error === "string" && typeof data.message === "string"
+              ? (data as ApiFailure)
+              : { error: "internal", message: `Oja answered with an unexpected error (HTTP ${res.status}).` },
+        });
         return;
       }
       setOutcome({ kind: "done", listing: data.listing, ms: data.ms });
@@ -81,6 +101,9 @@ export function Studio() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <div className="mb-6">
+        <ModelBadge info={modelInfo} />
+      </div>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-12">
         <form
           className="space-y-6"
@@ -162,7 +185,7 @@ export function Studio() {
               transition={{ duration: 0.2 }}
             >
               {outcome.kind === "idle" && <EmptyState />}
-              {outcome.kind === "loading" && <LoadingState />}
+              {outcome.kind === "loading" && <LoadingState local={modelInfo?.local ?? false} />}
               {outcome.kind === "error" && (
                 <ErrorPanel failure={outcome.failure} onRetry={() => void generate()} />
               )}

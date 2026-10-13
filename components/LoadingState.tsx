@@ -8,20 +8,24 @@ const MESSAGES = [
   "Picking out what buyers will notice…",
   "Writing the caption…",
   "Thinking about a fair price…",
-  "Still working. Small models on a laptop can take a couple of minutes…",
+  "Nearly there…",
 ];
 
 function Bar({ w }: { w: string }) {
   return <div className={`skeleton h-3 rounded-full ${w}`} />;
 }
 
-export function LoadingState() {
-  const [i, setI] = useState(0);
+export function LoadingState({ local }: { local: boolean }) {
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setI((n) => Math.min(n + 1, MESSAGES.length - 1)), 5000);
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Local CPU inference is slow, so pace the messages to match.
+  const step = local ? 20 : 4;
+  const i = Math.min(Math.floor(seconds / step), MESSAGES.length - 1);
 
   return (
     <div aria-busy="true">
@@ -40,6 +44,16 @@ export function LoadingState() {
           </motion.span>
         </AnimatePresence>
       </p>
+
+      {local && (
+        <div className="mt-3 rounded-xl bg-sand p-3 text-sm text-ink">
+          <p>
+            <span className="font-semibold text-forest">{seconds}s elapsed.</span> This model runs on your
+            own machine, so on a CPU it usually takes a couple of minutes. A hosted endpoint takes seconds.
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 space-y-4" aria-hidden="true">
         {[0, 1, 2].map((n) => (
           <div key={n} className="rounded-2xl border border-forest/10 bg-paper p-5">
