@@ -1,0 +1,23 @@
+# Render Blueprint for Oja. Create it from the dashboard: New > Blueprint.
+services:
+  - type: web
+    name: oja
+    runtime: node
+    plan: free
+    region: frankfurt
+    # corepack reads "packageManager" from package.json and uses that exact pnpm.
+    # --prod=false keeps devDependencies (TypeScript, Tailwind) even if NODE_ENV=production
+    # is set during the build.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: AI_BASE_URL
+        sync: false
+      - key: AI_MODEL
+        sync: false
+      - key: AI_API_KEY
+        sync: false
