@@ -17,7 +17,6 @@ await page.setInputFiles("input[type=file]", "test-assets/sample.jpg");
 await page.getByRole("img", { name: "Product photo 1" }).waitFor();
 await page.getByLabel(/What is it/).fill("Ankara tote bag");
 await page.getByLabel(/Condition/).fill("Brand new");
-await page.getByLabel(/Price in mind/).fill("₦15,000");
 await page.getByText("Naija Pidgin", { exact: true }).click();
 const t = Date.now();
 await page.getByRole("button", { name: /write my listing/i }).click();

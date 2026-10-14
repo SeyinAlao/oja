@@ -5,7 +5,7 @@ const t = Date.now();
 const res = await fetch("http://localhost:3010/api/generate", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ images: [img], hints: { name: "Ankara tote bag", condition: "Brand new", price: "₦15,000" }, style }),
+  body: JSON.stringify({ images: [img], hints: { name: "Ankara tote bag", condition: "Brand new" }, style }),
 });
 console.log(style, res.status, "wall ms:", Date.now() - t);
 console.log(JSON.stringify(await res.json(), null, 2));
