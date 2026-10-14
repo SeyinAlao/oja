@@ -19,12 +19,18 @@ export class AiError extends Error {
   }
 }
 
+// Enough for the whole JSON object; keeps a runaway small model from rambling.
+export const DEFAULT_MAX_TOKENS = 900;
+
 export function aiConfig() {
   return {
     baseUrl: (process.env.AI_BASE_URL || "http://localhost:11434/v1").replace(/\/+$/, ""),
     model: process.env.AI_MODEL || "gemma3:4b",
     apiKey: process.env.AI_API_KEY || "",
     timeoutMs: (Number(process.env.AI_TIMEOUT_SECONDS) || 300) * 1000,
+    // Optional: only sent when set, because not every endpoint accepts it.
+    reasoningEffort: process.env.AI_REASONING_EFFORT?.trim() || "",
+    maxTokens: Number(process.env.AI_MAX_TOKENS) || DEFAULT_MAX_TOKENS,
   };
 }
 
@@ -42,11 +48,8 @@ export function endpointInfo(): { model: string; local: boolean } {
   return { model, local: LOCAL_HOSTS.has(host) };
 }
 
-// Enough for the whole JSON object; keeps a runaway small model from rambling.
-const MAX_TOKENS = 900;
-
 export const chat: ChatFn = async (messages) => {
-  const { baseUrl, model, apiKey, timeoutMs } = aiConfig();
+  const { baseUrl, model, apiKey, timeoutMs, reasoningEffort, maxTokens } = aiConfig();
   let res: Response;
   try {
     res = await fetch(`${baseUrl}/chat/completions`, {
@@ -58,9 +61,10 @@ export const chat: ChatFn = async (messages) => {
       body: JSON.stringify({
         model,
         messages,
-        max_tokens: MAX_TOKENS,
+        max_tokens: maxTokens,
         temperature: 0.7,
         stream: false,
+        ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });

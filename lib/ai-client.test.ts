@@ -92,3 +92,29 @@ describe("chat", () => {
     await expect(chat(messages)).rejects.toMatchObject({ code: "bad_output" });
   });
 });
+
+describe("chat request body", () => {
+  async function sentBody() {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse());
+    vi.stubGlobal("fetch", fetchMock);
+    await chat(messages);
+    return JSON.parse(fetchMock.mock.calls[0]![1].body as string);
+  }
+
+  it("does not send reasoning_effort by default", async () => {
+    vi.stubEnv("AI_REASONING_EFFORT", "");
+    expect(await sentBody()).not.toHaveProperty("reasoning_effort");
+  });
+
+  it("sends reasoning_effort only when AI_REASONING_EFFORT is set", async () => {
+    vi.stubEnv("AI_REASONING_EFFORT", "low");
+    expect((await sentBody()).reasoning_effort).toBe("low");
+  });
+
+  it("uses 900 max tokens unless AI_MAX_TOKENS overrides it", async () => {
+    vi.stubEnv("AI_MAX_TOKENS", "");
+    expect((await sentBody()).max_tokens).toBe(900);
+    vi.stubEnv("AI_MAX_TOKENS", "600");
+    expect((await sentBody()).max_tokens).toBe(600);
+  });
+});
