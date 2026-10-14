@@ -65,6 +65,7 @@ What was checked (against the providers' own docs, 13 Oct 2026) and what was not
 - Hashtags are capped at 8 and de-duplicated. The price note is one sentence about what drives the range; the UI adds the "rough guide, not a guarantee" line once.
 - Only values the seller typed are sent as hints. Placeholders live in the `placeholder` attribute and cannot be sent (tested).
 - Generation time and whether the repair call was needed are logged (`[oja] generated ... attempts=1 ms=`) and returned as `ms` and `attempts`.
+- **One upstream retry.** If the model endpoint answers 429 or a 5xx, or the network call fails for a reason other than a timeout, the call is retried exactly once after 800-1500 ms (jittered), or after `Retry-After` when the server sends it, capped at 3 s. 4xx other than 429 and timeouts are never retried. Both attempts share one timeout deadline, so a retry cannot extend `AI_TIMEOUT_SECONDS`. Logs carry only the status code and attempt number. A second failure maps to the existing `upstream` error, and for 5xx the message says the AI service had a hiccup and to try again in a moment instead of quoting the status. This retry is separate from the one JSON repair call, so a single request can make up to four model calls in the worst case.
 
 ## Decisions
 
