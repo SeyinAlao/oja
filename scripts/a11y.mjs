@@ -178,7 +178,7 @@ const addPhoto = async (page) => {
   await page.waitForTimeout(500);
   await scan(page, "error");
   const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
-  /can’t reach the AI model/.test(focused ?? "") ? ok("focus moved to the error heading") : fail(`focus is on: ${focused}`);
+  /can’t reach the AI model|had a hiccup/.test(focused ?? "") ? ok("focus moved to the error heading") : fail(`focus is on: ${focused}`);
   await page.context().close();
 }
 

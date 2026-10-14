@@ -34,6 +34,29 @@ afterEach(() => {
 });
 
 describe("POST /api/generate error paths", () => {
+  it("reports which model served the request when the fallback was used", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    vi.stubEnv("AI_BASE_URL", "https://primary.example/v1");
+    vi.stubEnv("AI_MODEL", "primary-model");
+    vi.stubEnv("AI_FALLBACK_MODEL", "fallback-model");
+    const body = { choices: [{ message: { content: JSON.stringify(listing) } }] };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(new Response("x", { status: 500 }))
+        .mockResolvedValueOnce(new Response("x", { status: 500 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(body))),
+    );
+    const pending = POST(req(valid));
+    await vi.advanceTimersByTimeAsync(3000);
+    const res = await pending;
+    vi.useRealTimers();
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toMatchObject({ model: "fallback-model", fellBack: true });
+    expect(JSON.stringify(data)).not.toContain("primary.example");
+    vi.unstubAllEnvs();
+  });
+
   it("maps two upstream 503s to 502 with a plain 'hiccup' message and no status code", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout"] });
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response("x", { status: 503 })));

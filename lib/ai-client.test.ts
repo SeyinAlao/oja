@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("endpointInfo", () => {
   it("defaults to local Ollama and gemma3:4b", () => {
-    expect(endpointInfo()).toEqual({ model: "gemma3:4b", local: true });
+    expect(endpointInfo()).toEqual({ model: "gemma3:4b", local: true, fallback_configured: false });
   });
 
   it.each(["http://localhost:11434/v1", "http://127.0.0.1:8080/v1", "http://[::1]:11434/v1"])(
@@ -38,7 +38,7 @@ describe("endpointInfo", () => {
     vi.stubEnv("AI_MODEL", "some/model");
     vi.stubEnv("AI_API_KEY", "super-secret-key");
     const info = endpointInfo();
-    expect(info).toEqual({ model: "some/model", local: false });
+    expect(info).toEqual({ model: "some/model", local: false, fallback_configured: false });
     expect(JSON.stringify(info)).not.toMatch(/example|secret/);
   });
 

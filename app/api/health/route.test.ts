@@ -6,7 +6,7 @@ afterEach(() => vi.unstubAllEnvs());
 describe("GET /api/health", () => {
   it("reports ok, the model and whether it is local", async () => {
     const data = await (await GET()).json();
-    expect(data).toEqual({ ok: true, model: "gemma3:4b", local: true });
+    expect(data).toEqual({ ok: true, model: "gemma3:4b", local: true, fallback_configured: false });
   });
 
   it("never exposes the key or the endpoint URL", async () => {
