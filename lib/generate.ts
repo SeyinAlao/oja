@@ -28,14 +28,20 @@ export function parseListing(raw: string): ParseResult {
   return { ok: true, listing: parsed.data };
 }
 
-/** Ask the model once; if the reply is unusable, ask once more with a repair prompt. */
-export async function generateListing(req: GenerateRequest, send: ChatFn): Promise<Listing> {
+/**
+ * Ask the model once; if the reply is unusable, ask once more with a repair prompt.
+ * `attempts` is 1 when the first reply was valid, 2 when the repair call was needed.
+ */
+export async function generateListing(
+  req: GenerateRequest,
+  send: ChatFn,
+): Promise<{ listing: Listing; attempts: 1 | 2 }> {
   const messages: ChatMessage[] = [
     { role: "system", content: buildSystemPrompt(req.style) },
     {
       role: "user",
       content: [
-        { type: "text", text: buildUserText(req.hints, req.images.length) },
+        { type: "text", text: buildUserText(req.hints, req.images.length, req.style) },
         ...req.images.map((url) => ({ type: "image_url" as const, image_url: { url } })),
       ],
     },
@@ -43,7 +49,7 @@ export async function generateListing(req: GenerateRequest, send: ChatFn): Promi
 
   const first = await send(messages);
   const firstTry = parseListing(first);
-  if (firstTry.ok) return firstTry.listing;
+  if (firstTry.ok) return { listing: firstTry.listing, attempts: 1 };
 
   const second = await send([
     ...messages,
@@ -51,7 +57,7 @@ export async function generateListing(req: GenerateRequest, send: ChatFn): Promi
     { role: "user", content: buildRepairPrompt(firstTry.problem) },
   ]);
   const secondTry = parseListing(second);
-  if (secondTry.ok) return secondTry.listing;
+  if (secondTry.ok) return { listing: secondTry.listing, attempts: 2 };
 
   throw new AiError(
     "bad_output",

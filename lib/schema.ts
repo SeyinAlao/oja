@@ -11,15 +11,23 @@ const naira = z.preprocess((v) => {
   return v;
 }, z.number().int().nonnegative());
 
+export const MAX_HASHTAGS = 8;
+
 export const listingSchema = z.object({
+  // The model lists what it can see first; this grounds the copy and is not shown to the seller.
+  seen: z.array(z.string().trim().min(1).max(80)).max(12).optional(),
   title: text(120),
   caption: text(1500),
   description: text(3000),
+  // Empty is valid: it is what a "no sellable product" reply carries.
   hashtags: z
     .array(z.string().trim().min(1).max(60))
-    .min(1)
-    .max(15)
-    .transform((tags) => tags.map((t) => (t.startsWith("#") ? t : `#${t}`))),
+    .max(20)
+    .transform((tags) => {
+      const normal = tags.map((t) => (t.startsWith("#") ? t : `#${t.replace(/\s+/g, "")}`));
+      const unique = [...new Map(normal.map((t) => [t.toLowerCase(), t])).values()];
+      return unique.slice(0, MAX_HASHTAGS);
+    }),
   whatsapp_status: text(700),
   price_range_ngn: z.object({
     low: naira,

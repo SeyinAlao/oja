@@ -47,12 +47,15 @@ export async function POST(request: Request) {
   const { model } = aiConfig();
   const started = performance.now();
   try {
-    const listing = await generateListing(parsed.data, chat);
+    const { listing: full, attempts } = await generateListing(parsed.data, chat);
+    // "seen" only grounds the model's writing; the seller does not need it.
+    const { seen: _seen, ...listing } = full;
+    void _seen;
     const ms = Math.round(performance.now() - started);
     console.log(
-      `[oja] generated style=${parsed.data.style} images=${parsed.data.images.length} model=${model} ms=${ms}`,
+      `[oja] generated style=${parsed.data.style} images=${parsed.data.images.length} model=${model} attempts=${attempts} ms=${ms}`,
     );
-    return NextResponse.json({ listing, ms, model });
+    return NextResponse.json({ listing, ms, model, attempts });
   } catch (err) {
     const ms = Math.round(performance.now() - started);
     if (err instanceof AiError) {

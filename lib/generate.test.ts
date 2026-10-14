@@ -82,9 +82,10 @@ describe("parseListing", () => {
 describe("generateListing repair flow", () => {
   it("returns on the first valid reply without a second call", async () => {
     const send = vi.fn<ChatFn>().mockResolvedValue("```json\n" + JSON.stringify(valid) + "\n```");
-    const listing = await generateListing(request, send);
+    const { listing, attempts } = await generateListing(request, send);
     expect(listing.title).toBe("Ankara Tote Bag");
     expect(send).toHaveBeenCalledTimes(1);
+    expect(attempts).toBe(1);
   });
 
   it("retries once with a repair prompt that names the problem", async () => {
@@ -92,9 +93,10 @@ describe("generateListing repair flow", () => {
       .fn<ChatFn>()
       .mockResolvedValueOnce('{"title": "Only a title"}')
       .mockResolvedValueOnce(JSON.stringify(valid));
-    const listing = await generateListing(request, send);
+    const { listing, attempts } = await generateListing(request, send);
     expect(listing.caption).toBe(valid.caption);
     expect(send).toHaveBeenCalledTimes(2);
+    expect(attempts).toBe(2);
     const repairMessages = send.mock.calls[1]![0];
     const last = repairMessages[repairMessages.length - 1]!;
     expect(last.role).toBe("user");
