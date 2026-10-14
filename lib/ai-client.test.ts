@@ -76,9 +76,16 @@ describe("chat", () => {
     await expect(chat(messages)).rejects.toMatchObject({ code: "timeout" });
   });
 
-  it("maps a network failure to code unreachable", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
-    await expect(chat(messages)).rejects.toMatchObject({ code: "unreachable" });
+  it("maps a persistent network failure to code unreachable after one retry", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = expect(chat(messages)).rejects.toMatchObject({ code: "unreachable" });
+    await vi.advanceTimersByTimeAsync(3000);
+    await result;
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 
   it("maps a non-200 to code upstream", async () => {

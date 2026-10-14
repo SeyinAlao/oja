@@ -28,11 +28,26 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 describe("POST /api/generate error paths", () => {
+  it("maps two upstream 503s to 502 with a plain 'hiccup' message and no status code", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response("x", { status: 503 })));
+    const pending = POST(req(valid));
+    await vi.advanceTimersByTimeAsync(3000);
+    const res = await pending;
+    vi.useRealTimers();
+    expect(res.status).toBe(502);
+    const data = await res.json();
+    expect(data.error).toBe("upstream");
+    expect(data.message).toMatch(/hiccup.*try again in a moment/i);
+    expect(data.message).not.toMatch(/503/);
+  });
+
   it("returns 429 with Retry-After once the limit is exceeded", async () => {
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response("{}", { status: 200 })));
     const ip = "203.0.113.9";
@@ -72,8 +87,12 @@ describe("POST /api/generate error paths", () => {
 
   it("returns 502 unreachable when the model cannot be reached, without leaking the URL", async () => {
     vi.stubEnv("AI_BASE_URL", "https://secret-host.example/v1");
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
-    const res = await POST(req(valid));
+    const pending = POST(req(valid));
+    await vi.advanceTimersByTimeAsync(3000);
+    const res = await pending;
+    vi.useRealTimers();
     expect(res.status).toBe(502);
     const text = JSON.stringify(await res.json());
     expect(text).toContain("unreachable");
