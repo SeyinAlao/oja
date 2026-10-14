@@ -17,7 +17,7 @@ const MAX_PHOTOS = 3;
 type Outcome =
   | { kind: "idle" }
   | { kind: "loading" }
-  | { kind: "done"; listing: Listing; ms: number }
+  | { kind: "done"; listing: Listing; ms: number; model: string }
   | { kind: "error"; failure: ApiFailure };
 
 // Typed values are upright ink; placeholders are italic and lighter so they never read as input.
@@ -121,7 +121,12 @@ export function Studio() {
         });
         return;
       }
-      setOutcome({ kind: "done", listing: data.listing, ms: data.ms });
+      setOutcome({
+        kind: "done",
+        listing: data.listing,
+        ms: data.ms,
+        model: typeof data.model === "string" ? data.model : "",
+      });
       announce("Listing ready");
     } catch {
       setOutcome({
@@ -242,6 +247,7 @@ export function Studio() {
               {outcome.kind === "error" && (
                 <ErrorPanel
                   failure={outcome.failure}
+                  local={modelInfo ? modelInfo.local : true}
                   headingRef={headingRef}
                   onRetry={() => void generate()}
                 />
@@ -250,6 +256,7 @@ export function Studio() {
                 <ResultCards
                   listing={outcome.listing}
                   ms={outcome.ms}
+                  model={outcome.model}
                   headingRef={headingRef}
                   onRegenerate={() => void generate()}
                   onCopied={(label) => announce(`Copied ${label}`)}

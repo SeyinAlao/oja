@@ -5,7 +5,7 @@ export type ApiFailure = { error: string; message: string };
 const TITLES: Record<string, string> = {
   unreachable: "Oja can’t reach the AI model",
   timeout: "That took too long",
-  upstream: "The AI service couldn’t help",
+  upstream: "The AI service had a hiccup",
   rate_limited: "Slow down a little",
   too_large: "Those photos are too big",
   bad_request: "Check your photos",
@@ -13,7 +13,9 @@ const TITLES: Record<string, string> = {
   network: "No connection to Oja",
 };
 
-export function errorTitle(code: string): string {
+export function errorTitle(code: string, local = true): string {
+  // A hosted endpoint that cannot be reached is a temporary outage, not something to set up.
+  if (code === "unreachable" && !local) return "The AI service had a hiccup";
   return TITLES[code] ?? "Something went wrong";
 }
 
@@ -21,9 +23,11 @@ type Props = {
   failure: ApiFailure;
   onRetry: () => void;
   headingRef?: Ref<HTMLHeadingElement>;
+  /** Whether the configured model runs on this machine. Defaults to true. */
+  local?: boolean;
 };
 
-export function ErrorPanel({ failure, onRetry, headingRef }: Props) {
+export function ErrorPanel({ failure, onRetry, headingRef, local = true }: Props) {
   const { error } = failure;
 
   return (
@@ -33,11 +37,16 @@ export function ErrorPanel({ failure, onRetry, headingRef }: Props) {
         tabIndex={-1}
         className="font-display text-xl font-semibold text-clay"
       >
-        {errorTitle(error)}
+        {errorTitle(error, local)}
       </h2>
       <p className="mt-1 text-ink">{failure.message}</p>
 
-      {error === "unreachable" && (
+      {error === "unreachable" && !local && (
+        <p className="mt-3 text-sm text-muted">
+          This is usually temporary. Wait a moment and press Try again.
+        </p>
+      )}
+      {error === "unreachable" && local && (
         <div className="mt-3 text-sm text-ink">
           <p>If you are running Oja on your own machine, start Ollama and make sure the model is there:</p>
           <pre className="mt-2 overflow-x-auto rounded-xl bg-forest p-3 text-cream">

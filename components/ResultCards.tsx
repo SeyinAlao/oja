@@ -45,12 +45,14 @@ function Card({
 type Props = {
   listing: Listing;
   ms: number;
+  /** The model that actually served this listing (the fallback, when it was used). */
+  model?: string;
   headingRef: Ref<HTMLHeadingElement>;
   onRegenerate: () => void;
   onCopied: (label: string) => void;
 };
 
-export function ResultCards({ listing, ms, headingRef, onRegenerate, onCopied }: Props) {
+export function ResultCards({ listing, ms, model, headingRef, onRegenerate, onCopied }: Props) {
   if (isNoProduct(listing)) {
     return (
       <div className="rounded-2xl border border-saffron-deep/50 bg-paper p-5">
@@ -137,7 +139,9 @@ export function ResultCards({ listing, ms, headingRef, onRegenerate, onCopied }:
         <button type="button" onClick={onRegenerate} className="btn btn-outline">
           Regenerate
         </button>
-        <p className="text-xs text-muted">Written in {(ms / 1000).toFixed(1)}s</p>
+        <p className="text-xs text-muted">
+          Written in {(ms / 1000).toFixed(1)}s{model ? ` by ${model}` : ""}
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { AiError, aiConfig, chat } from "@/lib/ai-client";
-import { generateListing } from "@/lib/generate";
+import { AiError } from "@/lib/ai-client";
+import { generateWithFallback } from "@/lib/model-service";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { generateRequestSchema } from "@/lib/schema";
 
@@ -44,18 +44,24 @@ export async function POST(request: Request) {
     return fail("bad_request", "Please add 1 to 3 photos (JPEG, PNG or WebP) and pick a style.", 400);
   }
 
-  const { model } = aiConfig();
   const started = performance.now();
   try {
-    const { listing: full, attempts } = await generateListing(parsed.data, chat);
+    const served = await generateWithFallback(parsed.data);
     // "seen" only grounds the model's writing; the seller does not need it.
-    const { seen: _seen, ...listing } = full;
+    const { seen: _seen, ...listing } = served.listing;
     void _seen;
     const ms = Math.round(performance.now() - started);
     console.log(
-      `[oja] generated style=${parsed.data.style} images=${parsed.data.images.length} model=${model} attempts=${attempts} ms=${ms}`,
+      `[oja] generated style=${parsed.data.style} images=${parsed.data.images.length} ` +
+        `model=${served.model} fallback=${served.fellBack} attempts=${served.attempts} ms=${ms}`,
     );
-    return NextResponse.json({ listing, ms, model, attempts });
+    return NextResponse.json({
+      listing,
+      ms,
+      model: served.model,
+      fellBack: served.fellBack,
+      attempts: served.attempts,
+    });
   } catch (err) {
     const ms = Math.round(performance.now() - started);
     if (err instanceof AiError) {
