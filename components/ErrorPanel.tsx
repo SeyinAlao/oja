@@ -5,6 +5,7 @@ export type ApiFailure = { error: string; message: string };
 const TITLES: Record<string, string> = {
   unreachable: "Oja can’t reach the AI model",
   timeout: "That took too long",
+  upstream: "The AI service couldn’t help",
   rate_limited: "Slow down a little",
   too_large: "Those photos are too big",
   bad_request: "Check your photos",
