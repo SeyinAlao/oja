@@ -50,6 +50,8 @@ export async function generateListing(
   const first = await send(messages);
   const firstTry = parseListing(first);
   if (firstTry.ok) return { listing: firstTry.listing, attempts: 1 };
+  // Field paths and validation messages only, never model or photo content.
+  console.warn(`[oja] first reply invalid, repairing: ${firstTry.problem.slice(0, 200)}`);
 
   const second = await send([
     ...messages,

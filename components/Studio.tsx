@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildHints } from "@/lib/hints";
 import { resizeToDataUrl } from "@/lib/resize-image";
 import type { Listing, Style } from "@/lib/schema";
@@ -39,7 +39,6 @@ export function Studio() {
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const announceCount = useRef(0);
 
   // A one-off read of which model is configured; not server data worth a cache.
@@ -54,13 +53,12 @@ export function Studio() {
     return () => controller.abort();
   }, []);
 
-  // When a result or an error arrives, move focus to its heading so keyboard and
-  // screen-reader users land on it. Focus is never trapped; Tab continues from there.
-  useEffect(() => {
-    if (outcome.kind === "done" || outcome.kind === "error") {
-      headingRef.current?.focus({ preventScroll: true });
-    }
-  }, [outcome.kind]);
+  // The results or error heading mounts only after the old panel finishes animating out, so
+  // focus it from a callback ref at mount time. Keyboard and screen-reader users land on the
+  // outcome, and Tab continues from there: nothing is trapped.
+  const headingRef = useCallback((el: HTMLHeadingElement | null) => {
+    el?.focus({ preventScroll: true });
+  }, []);
 
   const loading = outcome.kind === "loading";
 
