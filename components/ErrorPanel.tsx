@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+
 export type ApiFailure = { error: string; message: string };
 
 const TITLES: Record<string, string> = {
@@ -14,12 +16,24 @@ export function errorTitle(code: string): string {
   return TITLES[code] ?? "Something went wrong";
 }
 
-export function ErrorPanel({ failure, onRetry }: { failure: ApiFailure; onRetry: () => void }) {
+type Props = {
+  failure: ApiFailure;
+  onRetry: () => void;
+  headingRef?: Ref<HTMLHeadingElement>;
+};
+
+export function ErrorPanel({ failure, onRetry, headingRef }: Props) {
   const { error } = failure;
 
   return (
     <div role="alert" className="rounded-2xl border border-clay/40 bg-paper p-5">
-      <h2 className="font-display text-xl font-semibold text-clay">{errorTitle(error)}</h2>
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="font-display text-xl font-semibold text-clay"
+      >
+        {errorTitle(error)}
+      </h2>
       <p className="mt-1 text-ink">{failure.message}</p>
 
       {error === "unreachable" && (
@@ -48,11 +62,7 @@ export function ErrorPanel({ failure, onRetry }: { failure: ApiFailure; onRetry:
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-4 min-h-11 rounded-full bg-forest px-5 font-semibold text-cream hover:bg-forest-soft"
-      >
+      <button type="button" onClick={onRetry} className="btn btn-solid mt-4">
         Try again
       </button>
     </div>

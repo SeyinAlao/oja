@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function CopyButton({ text, label }: { text: string; label: string }) {
+type Props = {
+  text: string;
+  /** Field name, used in the accessible name and the "Copied" announcement. */
+  label: string;
+  onCopied: (label: string) => void;
+};
+
+export function CopyButton({ text, label, onCopied }: Props) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -23,6 +30,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
       ta.remove();
     }
     setCopied(true);
+    onCopied(label);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopied(false), 2000);
   }
@@ -32,13 +40,10 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
       type="button"
       onClick={copy}
       aria-label={`Copy ${label}`}
-      className={`min-h-9 rounded-full border px-3 text-sm font-semibold transition-colors ${
-        copied
-          ? "border-forest bg-forest text-cream"
-          : "border-forest/40 text-forest hover:bg-forest/10"
-      }`}
+      className={`btn btn-chip ${copied ? "border-forest! bg-forest! text-cream!" : ""}`}
     >
-      <span aria-live="polite">{copied ? "Copied ✓" : "Copy"}</span>
+      {/* The spoken confirmation comes from the page's live region, so this stays silent. */}
+      <span aria-hidden="true">{copied ? "Copied ✓" : "Copy"}</span>
     </button>
   );
 }

@@ -33,6 +33,43 @@ body {
   background-size: 22px 22px;
 }
 
+/* Tailwind v4 no longer gives buttons a pointer, so every interactive element gets
+   its cursor here once, and disabled states say so. */
+@layer base {
+  button,
+  [role="button"],
+  a[href],
+  label:has(> input[type="radio"]),
+  label:has(> input[type="file"]) {
+    cursor: pointer;
+  }
+  button:disabled,
+  input:disabled,
+  [aria-disabled="true"],
+  fieldset:disabled label {
+    cursor: not-allowed;
+  }
+}
+
+/* Shared button styles: one hover, pressed and disabled behaviour for all of them. */
+@layer components {
+  .btn {
+    @apply inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 font-semibold transition duration-150 select-none active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-solid {
+    @apply bg-forest text-cream hover:bg-forest-soft active:bg-forest;
+  }
+  .btn-outline {
+    @apply border-2 border-forest text-forest hover:bg-forest/10 active:bg-forest/20;
+  }
+  .btn-chip {
+    @apply border border-forest/40 px-3 text-sm text-forest hover:bg-forest/10 active:bg-forest/20;
+  }
+  .btn-cta {
+    @apply bg-saffron px-6 py-3 text-lg font-bold text-forest shadow-[0_3px_0_var(--color-saffron-deep)] hover:brightness-105 active:translate-y-0.5 active:shadow-none;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--color-saffron-deep);
   outline-offset: 2px;

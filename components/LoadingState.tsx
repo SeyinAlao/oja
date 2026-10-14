@@ -29,7 +29,10 @@ export function LoadingState({ local }: { local: boolean }) {
 
   return (
     <div aria-busy="true">
-      <p className="flex items-center gap-2 text-forest" role="status">
+      <h2 className="font-display text-2xl font-semibold text-forest">Writing your listing</h2>
+      {/* Not a live region on purpose: the page announces "Writing your listing" once,
+          and a message that changes every few seconds would be noise. */}
+      <p className="mt-1 flex items-center gap-2 text-forest">
         <span className="inline-block size-2.5 animate-pulse rounded-full bg-saffron" aria-hidden="true" />
         <AnimatePresence mode="wait">
           <motion.span
