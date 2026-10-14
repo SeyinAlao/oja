@@ -34,6 +34,9 @@ Copy `.env.example` to `.env.local` if you want to change anything.
 | `AI_TIMEOUT_SECONDS` | `300` | Per-request timeout |
 | `AI_REASONING_EFFORT` | unset | Sent as `reasoning_effort` only when set. Not every endpoint or model accepts it (see Latency) |
 | `AI_MAX_TOKENS` | `900` | Cap on the model's reply length |
+| `AI_FALLBACK_MODEL` | unset | Optional second model. The fallback is off when this is unset |
+| `AI_FALLBACK_BASE_URL` | `AI_BASE_URL` | Base URL of the fallback endpoint |
+| `AI_FALLBACK_API_KEY` | `AI_API_KEY`, only if the base URL is the same | Key for the fallback endpoint |
 
 ## Using a hosted open-weight model
 
@@ -65,7 +68,9 @@ What was checked (against the providers' own docs, 13 Oct 2026) and what was not
 - Hashtags are capped at 8 and de-duplicated. The price note is one sentence about what drives the range; the UI adds the "rough guide, not a guarantee" line once.
 - Only values the seller typed are sent as hints. Placeholders live in the `placeholder` attribute and cannot be sent (tested).
 - Generation time and whether the repair call was needed are logged (`[oja] generated ... attempts=1 ms=`) and returned as `ms` and `attempts`.
-- **One upstream retry.** If the model endpoint answers 429 or a 5xx, or the network call fails for a reason other than a timeout, the call is retried exactly once after 800-1500 ms (jittered), or after `Retry-After` when the server sends it, capped at 3 s. 4xx other than 429 and timeouts are never retried. Both attempts share one timeout deadline, so a retry cannot extend `AI_TIMEOUT_SECONDS`. Logs carry only the status code and attempt number. A second failure maps to the existing `upstream` error, and for 5xx the message says the AI service had a hiccup and to try again in a moment instead of quoting the status. This retry is separate from the one JSON repair call, so a single request can make up to four model calls in the worst case.
+- **One upstream retry.** If the model endpoint answers 429 or a 5xx, or the network call fails for a reason other than a timeout, the call is retried exactly once after 800-1500 ms (jittered), or after `Retry-After` when the server sends it, capped at 3 s. 4xx other than 429 and timeouts are never retried. Both attempts share one timeout deadline, so a retry cannot extend `AI_TIMEOUT_SECONDS`. Logs carry only the status code and attempt number. A second failure maps to the existing `upstream` error, and for 5xx the message says the AI service had a hiccup and to try again in a moment instead of quoting the status. This retry is separate from the one JSON repair call, so without a fallback a single request can make up to four model calls in the worst case.
+- **Optional fallback model.** Set `AI_FALLBACK_MODEL` (and, for another provider, `AI_FALLBACK_BASE_URL` and `AI_FALLBACK_API_KEY`). When the primary has used its retry and still fails with 429, a 5xx or a non-timeout network error, Oja makes one attempt against the fallback, including that model's own JSON repair call but no HTTP retry. Timeouts, other 4xx and invalid JSON from the primary never trigger it. Every call of a request, retries and fallback included, shares one deadline, so `AI_TIMEOUT_SECONDS` still bounds the whole request. The response carries the model that actually answered, and the UI shows it next to the time ("Written in 9.1s by gemma-4-31b-it"). If the fallback fails too, the primary's error is returned, which reads as a temporary hiccup. The worst case with a fallback is six model calls: up to four on the primary (a call and its retry, then a repair call and its retry) plus two on the fallback (a call and a repair call). Logs carry status codes, attempt numbers and model names only.
+- The fallback key is never sent to the primary's host, and the primary key is only reused for the fallback when both use the same base URL. `/api/health` reports `fallback_configured` as a boolean and never a URL or key.
 
 ## Decisions
 
@@ -171,3 +176,5 @@ Notes:
 ## Why open models
 
 Sellers pay for the output, not for a brand of model. Open weights mean you choose where it runs: free on your own machine, on a cheap hosted endpoint, or later on a local box so customer photos never leave your control. Swapping models is an env var, so the product improves whenever a better open model ships.
+
+The same property is what makes the fallback cheap. The weights are published, so several providers serve the same or a similar model behind the same OpenAI-compatible API. When one provider has a bad hour, pointing Oja at another is a configuration change (`AI_FALLBACK_MODEL`, optionally a different `AI_FALLBACK_BASE_URL`), not a rewrite, and no seller is locked to one vendor's availability or pricing.
