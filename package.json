@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "a11y": "node scripts/a11y.mjs",
-    "og": "node scripts/make-og.mjs"
+    "og": "node scripts/make-og.mjs",
+    "example": "jiti scripts/generate-example.ts"
   },
   "dependencies": {
     "framer-motion": "^14.1.0",
@@ -28,6 +29,7 @@
     "@types/react-dom": "^19.3.0",
     "eslint": "^10.12.0",
     "eslint-config-next": "^16.4.0",
+    "jiti": "^2.7.0",
     "playwright-core": "^1.64.0",
     "postcss": "^8.5.30",
     "tailwindcss": "^4.3.3",
