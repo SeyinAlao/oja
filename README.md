@@ -2,14 +2,18 @@
 
 Listing writer for small Nigerian sellers on Instagram and WhatsApp. Upload 1 to 3 product photos, add optional hints, pick a voice (Clear English, Naija Pidgin or Yoruba-flavoured English) and get a title, caption with hashtags, description, WhatsApp status and a rough price guide, ready to copy.
 
+- **Live demo:** https://oja-ng.tech
+- **Demo video:** https://www.youtube.com/shorts/oaQ9pkC1Vhw
+- Built for the Hacktoberfest 2026 Open-Source AI Challenge, Week 2 (Side Hustle).
+
 Built with Next.js (App Router), TypeScript (strict), Tailwind CSS and Framer Motion. The AI is any open-weight vision model behind an OpenAI-compatible endpoint; the default is `gemma3:4b` on local Ollama.
 
 <p>
-  <img src="docs/mobile.png" alt="Oja on a phone: empty state with photo upload, hints and style picker" width="300">
-  <img src="docs/result.png" alt="Oja on a phone: a generated Naija Pidgin listing with copy buttons and a price guide" width="300">
+  <img src="docs/mobile.png" alt="Oja on a wide screen: a Naija Pidgin listing for a jar of cherry jam, with copy buttons and a price guide" width="300">
+  <img src="docs/result.png" alt="Oja on a phone: a Naija Pidgin listing for an Ankara tote bag, with copy buttons and a price guide" width="300">
 </p>
 
-The second screenshot is one real generation from `gemma3:4b` on local Ollama (CPU only), not a mock-up.
+Both screenshots are real generations from hosted `gemma-4-26b-a4b-it` through Google's OpenAI-compatible endpoint (the model badge in each shows it), not mock-ups.
 
 ## Run locally
 
