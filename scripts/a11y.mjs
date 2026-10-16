@@ -1,6 +1,7 @@
 // Accessibility check. Runs against a running app with /api/generate mocked, so it takes
 // seconds and needs no model. Covers:
-//   - axe-core (WCAG 2.0-2.2 A/AA + best-practice) in empty, loading, result, no-product, error
+//   - axe-core (WCAG 2.0-2.2 A/AA + best-practice) in empty, example, loading, result, no-product, error
+//   - example mode: no request to /api/generate, style switching, leaving it by adding a photo
 //   - keyboard-only walk, radio arrow keys, focus after generation
 //   - the polite live region ("Writing your listing", "Listing ready", "Copied title")
 //   - touch-target size (44px) and horizontal overflow at 390px
@@ -228,7 +229,56 @@ const addPhoto = async (page) => {
   await page.context().close();
 }
 
-// 6. Reduced motion
+// 6. Saved example: shown with no network call, swaps with the style, left by adding a photo
+{
+  const page = await open((route) => route.abort());
+  const generateCalls = [];
+  page.on("request", (r) => r.url().includes("/api/generate") && generateCalls.push(r.url()));
+
+  await page.getByRole("button", { name: /write my listing/i }).focus();
+  await page.keyboard.press("Tab");
+  const tryName = await page.evaluate(() => document.activeElement?.textContent?.trim());
+  tryName === "Try an example" ? ok("Tab from the generate button reaches 'Try an example'") : fail(`next focus: ${tryName}`);
+  await page.keyboard.press("Enter");
+  await page.getByRole("heading", { name: "Example listing" }).waitFor();
+  await page.waitForTimeout(500);
+  const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
+  focused === "Example listing" ? ok("focus moved to the example heading") : fail(`focus is on: ${focused}`);
+  /Example loaded/.test(await liveText(page)) ? ok("live region announces 'Example loaded'") : fail(`live: ${await liveText(page)}`);
+  (await page.getByText(/Saved example.*written by .+ on \d{1,2} \w+ \d{4}, not a live generation/).count()) === 1
+    ? ok("the example is labelled as saved, with its model and date")
+    : fail("saved-example label missing");
+  (await page.getByRole("img", { name: /Example product photo/ }).isVisible())
+    ? ok("the example photo thumbnail is shown")
+    : fail("example thumbnail missing");
+  (await page.getByRole("button", { name: "Regenerate" }).count()) === 0
+    ? ok("no Regenerate button on the saved example")
+    : fail("Regenerate offered on the saved example");
+  await scan(page, "example");
+
+  const caption = () => page.getByRole("region", { name: "Instagram caption" }).locator("p").first().innerText();
+  const english = await caption();
+  await page.getByRole("radio", { name: "Naija Pidgin" }).check({ force: true });
+  await page.waitForTimeout(200);
+  const pidgin = await caption();
+  pidgin !== english ? ok("switching style swaps to the saved Pidgin listing") : fail("caption did not change with the style");
+  /Example switched to Naija Pidgin/.test(await liveText(page))
+    ? ok("live region announces the style switch")
+    : fail(`live: ${await liveText(page)}`);
+
+  generateCalls.length === 0
+    ? ok("example mode made no request to /api/generate")
+    : fail(`example mode called /api/generate ${generateCalls.length} time(s)`);
+
+  await addPhoto(page);
+  await page.getByRole("heading", { name: "Your listing will show up here" }).waitFor();
+  (await page.getByRole("heading", { name: "Example listing" }).count()) === 0
+    ? ok("adding a photo leaves example mode")
+    : fail("example still shown after adding a photo");
+  await page.context().close();
+}
+
+// 7. Reduced motion
 {
   const page = await open((r) => r.abort(), { reducedMotion: "reduce" });
   const dur = await page.evaluate(() => {
