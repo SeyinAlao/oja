@@ -1,0 +1,80 @@
+{
+  "photo": "/examples/jam-jar.jpg",
+  "results": {
+    "english": {
+      "listing": {
+        "title": "Blue Pearl Cherry Jam",
+        "caption": "Enjoy delicious Blue Pearl Cherry Jam with your bread or pancakes. 🍒\n\nDM to order. We deliver nationwide. 📦",
+        "description": "This is a jar of Blue Pearl Cherry Jam. It comes in a clear glass jar with a colourful fruit patterned lid and a white label showing fresh cherries. DM to order for delivery in Lagos, Abuja, or Port Harcourt.",
+        "hashtags": [
+          "#cherryjam",
+          "#bluepearl",
+          "#breakfastessentials",
+          "#jam",
+          "#fooditems",
+          "#pantryessentials"
+        ],
+        "whatsapp_status": "Blue Pearl Cherry Jam available now. 🍒\nDM to order for delivery.",
+        "price_range_ngn": {
+          "low": 2500,
+          "high": 3500,
+          "note": "Price depends on the jar size."
+        }
+      },
+      "model": "gemma-4-26b-a4b-it",
+      "ms": 7332,
+      "attempts": 1,
+      "generatedAt": "2026-10-16"
+    },
+    "pidgin": {
+      "listing": {
+        "title": "Blue Pearl Cherry Jam",
+        "caption": "Oya see fine Cherry Jam! Blue Pearl brand, e sweet well well. DM to order.",
+        "description": "This na Blue Pearl Cherry Jam inside glass jar. E get white label with cherry picture and red patterned lid. DM to order, we dey deliver for Lagos, Abuja and Port Harcourt.",
+        "hashtags": [
+          "#cherryjam",
+          "#bluepearl",
+          "#breakfast",
+          "#foodstuff",
+          "#jam",
+          "#grocery"
+        ],
+        "whatsapp_status": "Blue Pearl Cherry Jam don land! Sweet jam inside glass jar. DM to order, we dey deliver nationwide.",
+        "price_range_ngn": {
+          "low": 2500,
+          "high": 4500,
+          "note": "Price fit change based on jar size"
+        }
+      },
+      "model": "gemma-4-26b-a4b-it",
+      "ms": 6638,
+      "attempts": 1,
+      "generatedAt": "2026-10-16"
+    },
+    "yoruba": {
+      "listing": {
+        "title": "Blue Pearl Cherry Jam",
+        "caption": "E káàbọ̀! Sweet cherry jam in a clear glass jar. Ẹ jọ̀ọ́, DM to order. 🍒",
+        "description": "This is a jar of Blue Pearl Cherry Jam. It has a white label with cherry pictures and a colourful lid with pink fruit patterns. Ó dára for your bread or snacks. DM to order, delivery in Lagos, Abuja and Port Harcourt.",
+        "hashtags": [
+          "#cherryjam",
+          "#bluepearl",
+          "#breakfast",
+          "#sweetspread",
+          "#fooditems",
+          "#jam"
+        ],
+        "whatsapp_status": "Blue Pearl Cherry Jam is here. O ṣeun for watching. DM to order, delivery available nationwide. 🍒",
+        "price_range_ngn": {
+          "low": 2500,
+          "high": 4000,
+          "note": "Price depends on the jar size"
+        }
+      },
+      "model": "gemma-4-26b-a4b-it",
+      "ms": 6816,
+      "attempts": 1,
+      "generatedAt": "2026-10-16"
+    }
+  }
+}
