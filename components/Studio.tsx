@@ -5,13 +5,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { buildHints, type HintFields } from "@/lib/hints";
 import { resizeToDataUrl } from "@/lib/resize-image";
 import type { Listing, Style } from "@/lib/schema";
+import { EmptyState } from "./EmptyState";
 import { ErrorPanel, type ApiFailure } from "./ErrorPanel";
+import { ExampleResult } from "./ExampleResult";
 import { HintInputs } from "./HintInputs";
 import { ImageDropzone, type Photo } from "./ImageDropzone";
 import { LoadingState } from "./LoadingState";
 import { ModelBadge, type ModelInfo } from "./ModelBadge";
 import { ResultCards } from "./ResultCards";
-import { StylePicker } from "./StylePicker";
+import { StylePicker, styleLabel } from "./StylePicker";
 
 const MAX_PHOTOS = 3;
 
@@ -19,6 +21,7 @@ type Outcome =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "done"; listing: Listing; ms: number; model: string }
+  | { kind: "example" }
   | { kind: "error"; failure: ApiFailure };
 
 const prefersReducedMotion = () =>
@@ -76,8 +79,19 @@ export function Studio() {
     }
     if (added.length) {
       setPhotos((p) => [...p, ...added].slice(0, MAX_PHOTOS));
+      setOutcome((o) => (o.kind === "example" ? { kind: "idle" } : o));
       announce(`${added.length} photo${added.length === 1 ? "" : "s"} added`);
     }
+  }
+
+  function showExample() {
+    setOutcome({ kind: "example" });
+    announce("Example loaded");
+  }
+
+  function changeStyle(next: Style) {
+    setStyle(next);
+    if (outcome.kind === "example") announce(`Example switched to ${styleLabel(next)}`);
   }
 
   async function generate() {
@@ -168,7 +182,7 @@ export function Studio() {
 
           <HintInputs value={hints} onChange={setHints} />
 
-          <StylePicker value={style} onChange={setStyle} disabled={loading} />
+          <StylePicker value={style} onChange={changeStyle} disabled={loading} />
 
           <button
             type="submit"
@@ -188,7 +202,14 @@ export function Studio() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {outcome.kind === "idle" && <EmptyState />}
+              {outcome.kind === "idle" && <EmptyState onTryExample={showExample} />}
+              {outcome.kind === "example" && (
+                <ExampleResult
+                  style={style}
+                  headingRef={headingRef}
+                  onCopied={(label) => announce(`Copied ${label}`)}
+                />
+              )}
               {outcome.kind === "loading" && <LoadingState local={modelInfo?.local ?? false} />}
               {outcome.kind === "error" && (
                 <ErrorPanel
@@ -213,17 +234,5 @@ export function Studio() {
         </div>
       </div>
     </MotionConfig>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-2xl border-2 border-dashed border-forest/25 p-8 text-center">
-      <h2 className="font-display text-2xl font-semibold text-forest">Your listing will show up here</h2>
-      <p className="mx-auto mt-2 max-w-sm text-muted">
-        A title, an Instagram caption with hashtags, a description, a WhatsApp status and a rough price
-        guide, all ready to copy.
-      </p>
-    </div>
   );
 }

@@ -10,6 +10,8 @@ const OPTIONS: { value: Style; label: string; sample: string }[] = [
   { value: "yoruba", label: "Yoruba-flavoured", sample: "E káàbọ̀, come and see." },
 ];
 
+export const styleLabel = (style: Style) => OPTIONS.find((o) => o.value === style)?.label ?? style;
+
 /**
  * Native radio inputs in one named group: screen readers announce a radio group, Tab enters it
  * once, and the arrow keys move the selection. The pill is decoration over the real controls.
