@@ -30,7 +30,7 @@ Other scripts: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and (wi
 
 The empty state has a **Try an example** button. It shows a photo of a jar of cherry jam and a saved listing for the selected style, labelled with the model and date it came from and "not a live generation". Switching the style swaps between the three saved listings. Nothing is sent to the model, so it works instantly, even while a hosted endpoint is down. Adding a photo or starting a generation leaves the example.
 
-The photo is `public/examples/jam-jar.jpg` and the listings are in `content/example.json`: real output from `gemma-4-26b-a4b-it`, generated on 16 Oct 2026 with no hints. To regenerate them with the model configured in `.env.local`:
+The photo is `public/examples/jam-jar.jpg` and the listings are in `content/example.json`: real output from `gemma-4-26b-a4b-it`, generated on 16 Oct 2026 with no hints, using the prompt before the use-suggestion change. None of the three states an unsupported fact, so they were kept. To regenerate them with the model configured in `.env.local`:
 
 ```powershell
 pnpm example                  # all three styles
@@ -81,7 +81,7 @@ What was checked (against the providers' own docs, 13 Oct 2026) and what was not
 - Prompt is compact, `max_tokens` is 900, and each style has its own voice brief with a worked example.
 - The chosen voice applies to the caption, description and WhatsApp status, and the user turn restates it.
 - The model first lists what it can see in a `seen` field (visible parts and colours). It grounds the copy, is validated, and is dropped from the response.
-- It may not invent a collection, sizes, materials or use cases. If the photos show nothing sellable, the title starts with "No sellable product visible" and the UI shows a plain explanation instead of cards.
+- It may add one short, generic suggestion of how the product is used, served, worn or paired ("enjoy it on bread or pancakes"). It may not state facts the photos or hints do not support: material, size, weight, quantity, ingredients, brand or model, storage or battery, authenticity ("original", "NAFDAC approved"), condition ("brand new", "UK used"), performance or longevity, origin, or health and safety. Text printed on the product counts as shown, and a hint is used exactly as given. Each style has a right and a wrong example on a neutral product. If the photos show nothing sellable, the title starts with "No sellable product visible" and the UI shows a plain explanation instead of cards.
 - Hashtags are capped at 8 and de-duplicated. The price note is one sentence about what drives the range; the UI adds the "rough guide, not a guarantee" line once.
 - Only values the seller typed are sent as hints. Placeholders live in the `placeholder` attribute and cannot be sent (tested).
 - Generation time and whether the repair call was needed are logged (`[oja] generated ... attempts=1 ms=`) and returned as `ms` and `attempts`.
@@ -135,7 +135,7 @@ One run of `gemma-4-26b-a4b-it` through the browser UI at the end took 27.8 s on
 
 - **Hosted endpoint errors.** The free-tier hosted model endpoint sometimes returns HTTP 5xx errors. Oja retries once, but some listings still fail and need the seller to try again.
 - **Fallback model untested in practice.** The optional fallback model is covered by unit tests, but it has not been observed to trigger in real testing.
-- **Serving suggestions creep in.** The prompt forbids use cases the photo does not show, but for the jam jar all 13 English and all 13 Yoruba-flavoured runs from `gemma-4-26b-a4b-it` suggested a use (bread, pancakes, snacks or breakfast) or made a taste claim. The saved example keeps the runs with the least of it, and the English and Yoruba-flavoured listings still contain one such phrase each.
+- **Read every line before posting.** Use suggestions ("enjoy it on bread or pancakes") are intentional. Facts are not: the model can still state things the photo does not prove, so the result ends with a reminder to fix anything that isn't true before posting. Measured on 16 Oct 2026 with `gemma-4-26b-a4b-it`, 10 runs per style on the jam jar and the tote sample (60 runs per prompt), outputs read by hand: runs with an unsupported factual claim (material, size, authenticity, condition, durability and the rest of the list above) went from 2 of 60 with the previous prompt ("sturdy" handle, "orange fabric") to 0 of 60, and runs with a sensible use suggestion went from 32 to 57 of 60 (jam 30/30; tote 27/30, the misses all in Clear English). First-try valid JSON stayed 60/60 and the voice check 59/60. Taste words such as "sweet" and "delicious" are not counted as claims. Zero in 60 runs is not a guarantee.
 - **Yoruba-flavoured English is not Yoruba.** It is English with light Yoruba touches, not full Yoruba.
 - **No screen-reader testing.** Manual testing with NVDA or VoiceOver has not been done (see Accessibility).
 - **Photos go to the provider in hosted mode.** With a hosted endpoint, photos are sent to the model provider. Check that provider's terms before use.
@@ -201,6 +201,10 @@ Notes:
 - `NODE_VERSION=22` is set in `render.yaml` (Render's default is currently newer), and `engines` in `package.json` allows 22 to 24.
 - Free instances sleep after idle time, so the first request after a pause is slow.
 - Optional: set `AI_TIMEOUT_SECONDS` to something shorter for hosted models.
+
+## Model licences
+
+Gemma 4 (the hosted `gemma-4-26b-a4b-it`) is under the Apache License 2.0, per Google's [Gemma 4 license page](https://ai.google.dev/gemma/apache_2). Gemma 3 (local `gemma3:4b`) is under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms), which include a Prohibited Use Policy, so it is open-weight but not Apache-licensed. Oja does not redistribute model weights; it calls a hosted endpoint or a model you pull yourself.
 
 ## Why open models
 
