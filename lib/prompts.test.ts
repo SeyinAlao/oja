@@ -24,11 +24,29 @@ describe("system prompt", () => {
     }
   });
 
-  it("forbids invented details and handles unsellable photos", () => {
+  it("forbids unsupported facts and handles unsellable photos", () => {
     const p = buildSystemPrompt("english");
-    expect(p).toMatch(/Never invent a brand, a "collection", sizes, materials/);
+    expect(p).toMatch(/Never state a fact the photos or the seller's hints do not support/);
+    for (const kind of ["material or fabric", "size", "ingredients", "brand or model", "origin"]) {
+      expect(p).toContain(kind);
+    }
+    expect(p).toMatch(/"NAFDAC approved"/);
+    expect(p).toMatch(/"UK used"/);
+    expect(p).toMatch(/any health or safety claim/);
+    expect(p).toMatch(/If a hint gives one of these facts, use it exactly as given/);
     expect(p).toContain(`"${NO_PRODUCT_PREFIX}: "`);
     expect(p).toMatch(/EVERY distinct part/);
+  });
+
+  it("allows one generic use suggestion", () => {
+    expect(buildSystemPrompt("english")).toMatch(/You MAY add ONE short, generic suggestion/);
+  });
+
+  it.each(STYLES)("gives %s a right and a wrong example on a product other than the jam jar", (style) => {
+    const p = buildSystemPrompt(style);
+    expect(p).toMatch(/right caption: "/);
+    expect(p).toMatch(/wrong caption: ".+" \(.+not in the photo\)/);
+    expect(p).not.toMatch(/\bjam\b/i);
   });
 
   it("asks for 5 to 8 hashtags and a non-repeating price note", () => {

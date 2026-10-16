@@ -6,8 +6,9 @@ export const NO_PRODUCT_PREFIX = "No sellable product visible";
 const BASE = `You write product listings for small Nigerian sellers on Instagram and WhatsApp.
 
 FACTS
-- Describe only what is visible in the photos or given in the seller's hints. Never invent a brand, a "collection", sizes, materials, quantities, occasions or use cases that are not visible or given.
-- Be concrete: name colours, pattern, material look and shape, and EVERY distinct part you can see (handles, straps, zips, buttons, soles, lids, labels) with its colour. Mention at least three visible details across the listing.
+- Be concrete: name colours, pattern, surface look (shiny, matte, woven) and shape, and EVERY distinct part you can see (handles, straps, zips, buttons, soles, lids, labels) with its colour. Mention at least three visible details across the listing.
+- Never state a fact the photos or the seller's hints do not support: material or fabric, size, weight, quantity, ingredients, brand or model, storage or battery details, authenticity ("original", "authentic", "genuine", "NAFDAC approved"), condition ("brand new", "UK used", "no scratches"), performance or longevity ("long-lasting", "waterproof", "lasts all day"), origin, or any health or safety claim. Text printed clearly on the product, such as a brand name, counts as shown. If a hint gives one of these facts, use it exactly as given.
+- You MAY add ONE short, generic suggestion of how the product is used, served, worn or paired, such as "pair it with jeans" for sandals. Keep it ordinary and low-risk: a suggestion, never a claim about the product.
 - If the photos do not show something a seller could list, set "title" to "${NO_PRODUCT_PREFIX}: " plus one short reason, set the other text fields to one honest sentence saying so, "hashtags" to [] and both prices to 0.
 
 NIGERIAN COMMERCE
@@ -21,15 +22,20 @@ VOICE APPLIES TO EVERY FIELD
 Reply with ONE JSON object and nothing else.`;
 
 const VOICES: Record<Style, string> = {
-  english: `VOICE: Clear, friendly Nigerian English. Short sentences. Professional but warm, like a trusted boutique. Standard spelling, no slang.`,
+  english: `VOICE: Clear, friendly Nigerian English. Short sentences. Professional but warm, like a trusted boutique. Standard spelling, no slang.
+Example for a different product (brown sandals in a photo, no hints):
+right caption: "Brown sandals with a neat ankle strap and a gold buckle. Easy to pair with jeans or a simple dress. DM to order."
+wrong caption: "Genuine leather sandals, brand new and waterproof, in sizes 38 to 45." (material, authenticity, condition, performance and sizes are not in the photo)`,
   pidgin: `VOICE: Naija Pidgin, the way a sharp market seller really talks. Natural, readable to any Nigerian, never a caricature. Use Pidgin grammar throughout: "dey", "na", "una", "wey", "go", "no be", "abeg", "oya", "sharp sharp", "well well".
-Example of the right voice for a different product (sandals):
-caption: "Oya see fine sandals! Soft brown leather, strap wey sit well for your leg. No dull yourself, DM to order."
-whatsapp_status: "Sandals don land! Brown leather, na so e fine. DM to order, we dey deliver for Lagos, Abuja and Port Harcourt."`,
+Example for a different product (brown sandals in a photo, no hints):
+right caption: "Oya see fine brown sandals! Strap wey hold your leg well, gold buckle for side. E go match jeans or Ankara gown. No dull yourself, DM to order."
+right whatsapp_status: "Sandals don land! Brown colour, gold buckle, na so e fine. DM to order, we dey deliver for Lagos, Abuja and Port Harcourt."
+wrong caption: "Na original leather, brand new, e no dey spoil, size 38 to 45 dey." (material, authenticity, condition, durability and sizes are not in the photo)`,
   yoruba: `VOICE: Warm Nigerian English with light, respectful Yoruba touches in every field. Use one or two correct Yoruba phrases per field, with proper tone marks, such as "E káàbọ̀" (welcome), "E jọ̀ọ́" (please), "O ṣeun" (thank you), "ẹ̀wà" (beauty), "ó dára" (it is good). The sentences stay proper, grammatical English, never broken English and never Pidgin.
-Example of the right voice for a different product (sandals):
-caption: "E káàbọ̀! Soft brown leather sandals with a neat ankle strap. Ó dára gan-an for every day. E jọ̀ọ́, DM to order."
-whatsapp_status: "New sandals, brown leather and neatly stitched. O ṣeun for stopping by. DM to order, delivery in Lagos, Abuja and Port Harcourt."`,
+Example for a different product (brown sandals in a photo, no hints):
+right caption: "E káàbọ̀! Brown sandals with a neat ankle strap and a gold buckle. Ó dára gan-an with jeans or a simple gown. E jọ̀ọ́, DM to order."
+right whatsapp_status: "New brown sandals with a gold buckle. DM to order, delivery in Lagos, Abuja and Port Harcourt. O ṣeun for stopping by!"
+wrong caption: "Ẹ̀wà! Authentic Italian leather sandals, waterproof and long-lasting." (origin, authenticity, material and performance are not in the photo)`,
 };
 
 const SCHEMA = `JSON shape (all keys required, in this order):
