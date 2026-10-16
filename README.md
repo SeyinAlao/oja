@@ -118,6 +118,15 @@ One run of `gemma-4-26b-a4b-it` through the browser UI at the end took 27.8 s on
 - **`max_tokens` 600 instead of 900**: valid JSON 9/9 and equivalent output, but no measurable speed-up (within run-to-run noise), so the default stays at 900 to leave headroom. `AI_MAX_TOKENS` lets you change it.
 - Output quality was checked on every run with `scripts/bench.mjs`: the brown handle was mentioned 9/9, no American slang appeared, hashtag counts were 5 to 8, the price note never repeated the disclaimer, and Pidgin and Yoruba markers appeared in all three text fields. Those are regex checks plus reading samples, not a human evaluation.
 
+## Known limitations
+
+- **Hosted endpoint errors.** The free-tier hosted model endpoint sometimes returns HTTP 5xx errors. Oja retries once, but some listings still fail and need the seller to try again.
+- **Fallback model untested in practice.** The optional fallback model is covered by unit tests, but it has not been observed to trigger in real testing.
+- **Yoruba-flavoured English is not Yoruba.** It is English with light Yoruba touches, not full Yoruba.
+- **No screen-reader testing.** Manual testing with NVDA or VoiceOver has not been done (see Accessibility).
+- **Photos go to the provider in hosted mode.** With a hosted endpoint, photos are sent to the model provider. Check that provider's terms before use.
+- **Local inference is slow.** On a CPU, local inference takes minutes per listing (see Measured generation time).
+
 ## Accessibility
 
 Built and checked against WCAG 2.2 AA criteria with automated and scripted keyboard checks (`pnpm a11y`, axe-core plus a Playwright walk-through, API mocked). **Manual testing with a screen reader (NVDA on Windows, VoiceOver on iOS) has not been done yet, so no conformance level is claimed.** Automated tools find only part of the real problems.
