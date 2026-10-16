@@ -47,12 +47,25 @@ type Props = {
   ms: number;
   /** The model that actually served this listing (the fallback, when it was used). */
   model?: string;
+  title?: string;
+  /** Shown between the heading and the cards. */
+  intro?: ReactNode;
   headingRef: Ref<HTMLHeadingElement>;
-  onRegenerate: () => void;
+  /** Omit when there is nothing to regenerate, such as the saved example. */
+  onRegenerate?: () => void;
   onCopied: (label: string) => void;
 };
 
-export function ResultCards({ listing, ms, model, headingRef, onRegenerate, onCopied }: Props) {
+export function ResultCards({
+  listing,
+  ms,
+  model,
+  title = "Your listing",
+  intro,
+  headingRef,
+  onRegenerate,
+  onCopied,
+}: Props) {
   if (isNoProduct(listing)) {
     return (
       <div className="rounded-2xl border border-saffron-deep/50 bg-paper p-5">
@@ -67,9 +80,11 @@ export function ResultCards({ listing, ms, model, headingRef, onRegenerate, onCo
         <p className="mt-2 text-sm text-muted">
           Try a clear, well-lit photo of the item on its own, then press the button again.
         </p>
-        <button type="button" onClick={onRegenerate} className="btn btn-solid mt-4">
-          Try again
-        </button>
+        {onRegenerate && (
+          <button type="button" onClick={onRegenerate} className="btn btn-solid mt-4">
+            Try again
+          </button>
+        )}
       </div>
     );
   }
@@ -86,8 +101,9 @@ export function ResultCards({ listing, ms, model, headingRef, onRegenerate, onCo
         tabIndex={-1}
         className="font-display text-2xl font-semibold text-forest"
       >
-        Your listing
+        {title}
       </h2>
+      {intro}
 
       <Card heading="Title" copyText={listing.title} index={0} onCopied={onCopied}>
         <p className="font-display text-2xl font-semibold leading-snug text-forest">{listing.title}</p>
@@ -136,10 +152,12 @@ export function ResultCards({ listing, ms, model, headingRef, onRegenerate, onCo
       </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        <button type="button" onClick={onRegenerate} className="btn btn-outline">
-          Regenerate
-        </button>
-        <p className="text-xs text-muted">
+        {onRegenerate && (
+          <button type="button" onClick={onRegenerate} className="btn btn-outline">
+            Regenerate
+          </button>
+        )}
+        <p className="ml-auto text-xs text-muted">
           Written in {(ms / 1000).toFixed(1)}s{model ? ` by ${model}` : ""}
         </p>
       </div>
