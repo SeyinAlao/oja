@@ -24,7 +24,20 @@ pnpm install
 pnpm dev              # http://localhost:3000
 ```
 
-Other scripts: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and (with the app running on port 3010) `pnpm a11y` and `node scripts/bench.mjs` for the accessibility and latency checks.
+Other scripts: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and (with the app running on port 3010) `pnpm a11y` and `node scripts/bench.mjs` for the accessibility and latency checks. `pnpm og` renders `public/og.png` and `docs/cover.png`.
+
+## Saved example
+
+The empty state has a **Try an example** button. It shows a photo of a jar of cherry jam and a saved listing for the selected style, labelled with the model and date it came from and "not a live generation". Switching the style swaps between the three saved listings. Nothing is sent to the model, so it works instantly, even while a hosted endpoint is down. Adding a photo or starting a generation leaves the example.
+
+The photo is `public/examples/jam-jar.jpg` and the listings are in `content/example.json`: real output from `gemma-4-26b-a4b-it`, generated on 16 Oct 2026 with no hints. To regenerate them with the model configured in `.env.local`:
+
+```powershell
+pnpm example                  # all three styles
+pnpm example english yoruba   # only these; the others are kept
+```
+
+`scripts/generate-example.ts` calls the same model service as `/api/generate`. It retries a style (up to 3 times) when the request fails or when the caption, description or WhatsApp status misses the chosen voice, then validates the whole file with the app's schema before writing it. A test validates the committed file too. The script cannot judge accuracy, so read the new listings against the photo before committing them.
 
 ## Environment variables
 
@@ -122,6 +135,7 @@ One run of `gemma-4-26b-a4b-it` through the browser UI at the end took 27.8 s on
 
 - **Hosted endpoint errors.** The free-tier hosted model endpoint sometimes returns HTTP 5xx errors. Oja retries once, but some listings still fail and need the seller to try again.
 - **Fallback model untested in practice.** The optional fallback model is covered by unit tests, but it has not been observed to trigger in real testing.
+- **Serving suggestions creep in.** The prompt forbids use cases the photo does not show, but for the jam jar all 13 English and all 13 Yoruba-flavoured runs from `gemma-4-26b-a4b-it` suggested a use (bread, pancakes, snacks or breakfast) or made a taste claim. The saved example keeps the runs with the least of it, and the English and Yoruba-flavoured listings still contain one such phrase each.
 - **Yoruba-flavoured English is not Yoruba.** It is English with light Yoruba touches, not full Yoruba.
 - **No screen-reader testing.** Manual testing with NVDA or VoiceOver has not been done (see Accessibility).
 - **Photos go to the provider in hosted mode.** With a hosted endpoint, photos are sent to the model provider. Check that provider's terms before use.
