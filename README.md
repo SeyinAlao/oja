@@ -88,26 +88,28 @@ What was checked (against the providers' own docs, 13 Oct 2026) and what was not
 
 ## Measured generation time
 
-Local, `gemma3:4b` on Ollama 0.40.3, 100% CPU, one 1024px photo (earlier prompt):
+Two models were timed. Every number below names the model it came from.
 
-| Style | Server time |
-| --- | --- |
-| Clear English | 148.7 s |
-| Naija Pidgin | 148.0 s |
-| Yoruba-flavoured | 157.2 s |
+**Local: `gemma3:4b`** on Ollama 0.40.3, 100% CPU, one 1024px photo (earlier prompt):
 
-A later run through the browser UI took 215 s. Expect 2.5 to 3.5 minutes on a CPU, which is why the UI shows an elapsed-seconds counter for local models.
+| Model | Style | Server time |
+| --- | --- | --- |
+| `gemma3:4b` (local, CPU) | Clear English | 148.7 s |
+| `gemma3:4b` (local, CPU) | Naija Pidgin | 148.0 s |
+| `gemma3:4b` (local, CPU) | Yoruba-flavoured | 157.2 s |
 
-Hosted, `gemma-4-26b-a4b-it` through Google's OpenAI-compatible endpoint, 14 Oct 2026, one product photo (838x1024 JPEG), 3 runs per style, server time in seconds (median, min to max):
+A later run of `gemma3:4b` through the browser UI took 215 s. Expect 2.5 to 3.5 minutes on a CPU, which is why the UI shows an elapsed-seconds counter for local models.
 
-| Configuration | English | Pidgin | Yoruba | Valid JSON, first try |
-| --- | --- | --- | --- | --- |
-| Earlier prompt, 1024px, `max_tokens` 900 | 8.3 (8.0-8.3) | 7.8 (7.6-7.8) | 7.9 (7.9-8.2) | not recorded; 7/9 calls succeeded, 2 failed upstream (HTTP 502) |
-| **Current prompt, 1024px, 900 (kept)** | 11.0 (7.4-13.4) | 7.1 (6.8-7.2) | 7.6 (7.4-7.7) | 9/9 |
-| Current prompt, **768px**, 900 | 26.0 (25.6-26.0) | 25.8 (25.5-26.0) | 26.9 (26.4-26.9) | 0/9 (all needed the repair call; 2 of 9 still failed) |
-| Current prompt, 1024px, `max_tokens` **600** | 7.0 (6.8-7.7) | 6.5 (6.3-7.5) | 7.7 (7.3-8.0) | 9/9 |
+**Hosted: `gemma-4-26b-a4b-it`** through Google's OpenAI-compatible endpoint, 14 Oct 2026, one product photo (838x1024 JPEG), 3 runs per style, server time in seconds (median, min to max). Every row is this model:
 
-One run through the browser UI at the end took 27.8 s on the server for a single request, so expect a spread of roughly 7 to 30 s rather than a fixed number. These are single-machine, single-day measurements against a free-tier endpoint, not a benchmark.
+| Model | Configuration | English | Pidgin | Yoruba | Valid JSON, first try |
+| --- | --- | --- | --- | --- | --- |
+| `gemma-4-26b-a4b-it` | Earlier prompt, 1024px, `max_tokens` 900 | 8.3 (8.0-8.3) | 7.8 (7.6-7.8) | 7.9 (7.9-8.2) | not recorded; 7/9 calls succeeded, 2 failed upstream (HTTP 502) |
+| `gemma-4-26b-a4b-it` | **Current prompt, 1024px, 900 (kept)** | 11.0 (7.4-13.4) | 7.1 (6.8-7.2) | 7.6 (7.4-7.7) | 9/9 |
+| `gemma-4-26b-a4b-it` | Current prompt, **768px**, 900 | 26.0 (25.6-26.0) | 25.8 (25.5-26.0) | 26.9 (26.4-26.9) | 0/9 (all needed the repair call; 2 of 9 still failed) |
+| `gemma-4-26b-a4b-it` | Current prompt, 1024px, `max_tokens` **600** | 7.0 (6.8-7.7) | 6.5 (6.3-7.5) | 7.7 (7.3-8.0) | 9/9 |
+
+One run of `gemma-4-26b-a4b-it` through the browser UI at the end took 27.8 s on the server for a single request, so expect a spread of roughly 7 to 30 s rather than a fixed number. These are single-machine, single-day measurements against a free-tier endpoint, not a benchmark.
 
 ### Latency experiments
 
