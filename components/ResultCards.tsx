@@ -151,6 +151,10 @@ export function ResultCards({
         <p className="mt-2 text-sm text-muted">A rough guide only, not a guarantee.</p>
       </Card>
 
+      <p className="text-sm text-muted">
+        Read it through and fix anything that isn’t true for your product before you post.
+      </p>
+
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         {onRegenerate && (
           <button type="button" onClick={onRegenerate} className="btn btn-outline">

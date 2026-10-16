@@ -32,6 +32,16 @@ describe("ResultCards", () => {
     expect(html.match(/rough guide only, not a guarantee/gi)).toHaveLength(1);
   });
 
+  it("asks the seller to check the listing, as plain text rather than an announcement", () => {
+    const html = renderToStaticMarkup(
+      <ResultCards listing={listing} ms={1} headingRef={null} onRegenerate={noop} onCopied={noop} />,
+    );
+    expect(html).toMatch(
+      /<p class="[^"]*">Read it through and fix anything that isn’t true for your product before you post\.<\/p>/,
+    );
+    expect(html).not.toMatch(/aria-live|role="(status|alert)"/);
+  });
+
   it("shows a clear message instead of cards when no product is visible", () => {
     const empty: Listing = {
       ...listing,
