@@ -2,10 +2,11 @@
 
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { buildHints } from "@/lib/hints";
+import { buildHints, type HintFields } from "@/lib/hints";
 import { resizeToDataUrl } from "@/lib/resize-image";
 import type { Listing, Style } from "@/lib/schema";
 import { ErrorPanel, type ApiFailure } from "./ErrorPanel";
+import { HintInputs } from "./HintInputs";
 import { ImageDropzone, type Photo } from "./ImageDropzone";
 import { LoadingState } from "./LoadingState";
 import { ModelBadge, type ModelInfo } from "./ModelBadge";
@@ -20,20 +21,13 @@ type Outcome =
   | { kind: "done"; listing: Listing; ms: number; model: string }
   | { kind: "error"; failure: ApiFailure };
 
-// Typed values are upright ink; placeholders are italic and lighter so they never read as input.
-const field =
-  "mt-1.5 w-full min-h-11 rounded-xl border border-forest/30 bg-paper px-3 text-ink " +
-  "placeholder:italic placeholder:text-muted";
-
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function Studio() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [condition, setCondition] = useState("");
-  const [price, setPrice] = useState("");
+  const [hints, setHints] = useState<HintFields>({ name: "", condition: "", price: "" });
   const [style, setStyle] = useState<Style>("english");
   const [outcome, setOutcome] = useState<Outcome>({ kind: "idle" });
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
@@ -106,7 +100,7 @@ export function Studio() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           images: photos.map((p) => p.dataUrl),
-          hints: buildHints({ name, condition, price }),
+          hints: buildHints(hints),
           style,
         }),
       });
@@ -172,55 +166,7 @@ export function Studio() {
             }}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="sm:col-span-2 lg:col-span-1">
-              <label htmlFor="hint-name" className="text-sm font-semibold text-forest">
-                What is it? <span className="font-normal text-muted">(optional)</span>
-              </label>
-              <input
-                id="hint-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={80}
-                placeholder="e.g. Ankara tote bag"
-                autoComplete="off"
-                className={field}
-              />
-            </div>
-            <div>
-              <label htmlFor="hint-condition" className="text-sm font-semibold text-forest">
-                Condition <span className="font-normal text-muted">(optional)</span>
-              </label>
-              <input
-                id="hint-condition"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                maxLength={60}
-                placeholder="e.g. Brand new"
-                autoComplete="off"
-                className={field}
-              />
-            </div>
-            <div>
-              <label htmlFor="hint-price" className="text-sm font-semibold text-forest">
-                Price in mind <span className="font-normal text-muted">(optional)</span>
-              </label>
-              <input
-                id="hint-price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                maxLength={40}
-                inputMode="numeric"
-                placeholder="e.g. 15000"
-                autoComplete="off"
-                aria-describedby="hint-price-help"
-                className={field}
-              />
-              <p id="hint-price-help" className="mt-1 text-xs text-muted">
-                Leave empty to get a suggested range. Only what you type is used.
-              </p>
-            </div>
-          </div>
+          <HintInputs value={hints} onChange={setHints} />
 
           <StylePicker value={style} onChange={setStyle} disabled={loading} />
 
